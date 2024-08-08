@@ -29,17 +29,33 @@ async function getHotels() {
 
     const data = await response.json();
     
-    const transformedData = data.data.hotels.map((hotel: any) => ({
-      id: new ObjectId(),
-      name: hotel.hotel_name,
-      country: hotel.country,
-      countryId: hotel.country_id,
-      city: hotel.city,
-      cityId: hotel.city_id,
-      price: Math.ceil(parseFloat(hotel.price)),
-      stars: parseInt(hotel.star, 10) || 0,
-      imageUrl: hotel.image || '',
-    }));
+    // Group by hotel_id and select the cheapest offer
+    const hotelsMap = new Map<string, any>();
+    data.data.hotels.forEach((hotel: any) => {
+      const hotelId = hotel.hotel_id;
+      if (!hotelsMap.has(hotelId) || hotelsMap.get(hotelId).price > parseFloat(hotel.price)) {
+        hotelsMap.set(hotelId, {
+          id: new ObjectId,
+          name: hotel.hotel_name,
+          country: hotel.country,
+          countryId: hotel.country_id,
+          city: hotel.city,
+          cityId: hotel.city_id,
+          price: Math.ceil(parseFloat(hotel.price)),
+          stars: parseInt(hotel.star, 10) || 0,
+          imageUrl: hotel.image || '',
+        });
+      } else if (hotel.image) {
+        // Update imageUrl if another offer has an image
+        const existingHotel = hotelsMap.get(hotelId);
+        if (!existingHotel.imageUrl) {
+          existingHotel.imageUrl = hotel.image;
+          hotelsMap.set(hotelId, existingHotel);
+        }
+      }
+    });
+
+    const transformedData = Array.from(hotelsMap.values());
 
     console.log('Storing data in cache');
     await cacheCollection.updateMany(

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const client = new MongoClient(process.env.MONGODB_URI as string);
 
@@ -8,6 +8,7 @@ async function getHotels() {
     await client.connect();
     const db = client.db('king-it-test');
     const cacheCollection = db.collection('hotels');
+
     const cache = await cacheCollection.findOne({ name: 'hotels' });
 
     if (cache && new Date().getTime() - cache.timestamp < 20 * 60 * 1000) {
@@ -18,8 +19,8 @@ async function getHotels() {
     console.log('Fetching new data from API');
     const response = await fetch('http://testapi.swisshalley.com/hotels/', {
       headers: {
-        'X-API-KEY': process.env.API_KEY as string
-      }
+        'X-API-KEY': process.env.API_KEY as string,
+      },
     });
 
     if (!response.ok) {
@@ -27,8 +28,10 @@ async function getHotels() {
     }
 
     const data = await response.json();
+    
     const transformedData = data.data.hotels.map((hotel: any) => ({
-      id: hotel.hotel_id,
+      id: new ObjectId(),
+      hotelId: hotel.hotel_id,
       name: hotel.hotel_name,
       country: hotel.country,
       countryId: hotel.country_id,
@@ -36,7 +39,7 @@ async function getHotels() {
       cityId: hotel.city_id,
       price: Math.ceil(parseFloat(hotel.price)),
       stars: parseInt(hotel.star, 10) || 0,
-      imageUrl: hotel.image || ''
+      imageUrl: hotel.image || '',
     }));
 
     console.log('Storing data in cache');

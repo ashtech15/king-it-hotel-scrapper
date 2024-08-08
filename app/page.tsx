@@ -8,6 +8,7 @@ import Pagination from './components/Pagination';
 
 interface Hotel {
   id: string;
+  hotelId: string;
   name: string;
   country: string;
   countryId: string;
@@ -18,12 +19,7 @@ interface Hotel {
   imageUrl?: string;
 }
 
-interface Country {
-  id: string;
-  name: string;
-}
-
-interface City {
+interface Filter {
   id: string;
   name: string;
 }
@@ -36,8 +32,8 @@ const Page = () => {
   const [countryIdFilter, setCountryIdFilter] = useState<string>('');
   const [cityIdFilter, setCityIdFilter] = useState<string>('');
   const [sortOption, setSortOption] = useState<string>('');
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
+  const [countries, setCountries] = useState<Filter[]>([]);
+  const [cities, setCities] = useState<Filter[]>([]);
 
   const itemsPerPage = 21;
 
@@ -87,7 +83,7 @@ const Page = () => {
 
     setFilteredHotels(updatedHotels);
     setTotalPages(Math.ceil(updatedHotels.length / itemsPerPage));
-    setCurrentPage(1); // Reset to first page on filter/sort change
+    setCurrentPage(1);
   }, [countryIdFilter, cityIdFilter, sortOption, hotels]);
 
   const handlePageChange = (page: number) => {

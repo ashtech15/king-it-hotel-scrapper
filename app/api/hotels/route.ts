@@ -49,6 +49,7 @@ async function getHotels() {
           stars: parseInt(hotel.star, 10) || 0,
           imageUrl: hotel.image || '',
           cachedAt: new Date(),
+          lastUpdated: new Date(),
         });
       } else if (hotel.image) {
         // Update imageUrl if another offer has an image

@@ -26,4 +26,6 @@ const HotelSchema: Schema = new Schema({
   cachedAt: { type: Date, default: Date.now, expires: '20m' },
 });
 
+HotelSchema.index({ cachedAt: 1 }, { expireAfterSeconds: 20 * 60 });
+
 export default mongoose.models.Hotel || mongoose.model<IHotel>('Hotel', HotelSchema);

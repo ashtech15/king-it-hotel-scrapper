@@ -1,50 +1,46 @@
 import { useState } from 'react';
 
-interface FiltersProps {
-  countries: string[];
-  cities: string[];
-  onFilterChange: (country: string, city: string) => void;
+interface FilterOption {
+  id: string;
+  name: string;
 }
 
-const Filters: React.FC<FiltersProps> = ({ countries, cities, onFilterChange }) => {
-  const [selectedCountry, setSelectedCountry] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
+interface FiltersProps {
+  countries: FilterOption[];
+  cities: FilterOption[];
+  onFilterChange: (countryId: string, cityId: string) => void;
+}
 
-  const handleFilterChange = () => {
-    onFilterChange(selectedCountry, selectedCity);
+const Filters = ({ countries, cities, onFilterChange }: FiltersProps) => {
+  const [selectedCountryId, setSelectedCountryId] = useState<string>('');
+  const [selectedCityId, setSelectedCityId] = useState<string>('');
+
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryId = e.target.value;
+    setSelectedCountryId(countryId);
+    onFilterChange(countryId, selectedCityId);
+  };
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const cityId = e.target.value;
+    setSelectedCityId(cityId);
+    onFilterChange(selectedCountryId, cityId);
   };
 
   return (
-    <div className="flex space-x-4 mb-4">
-      <select
-        value={selectedCountry}
-        onChange={(e) => setSelectedCountry(e.target.value)}
-        className="px-4 py-2 bg-white border rounded"
-      >
+    <div className='flex space-x-4 mb-4'>
+      <select onChange={handleCountryChange} value={selectedCountryId} className='px-4 py-2 bg-white border rounded'>
         <option value="">All Countries</option>
-        {countries.map((country) => (
-          <option key={country} value={country}>
-            {country}
-          </option>
+        {countries.map(({ id, name }) => (
+          <option key={id} value={id}>{name}</option>
         ))}
       </select>
-
-      <select
-        value={selectedCity}
-        onChange={(e) => setSelectedCity(e.target.value)}
-        className="px-4 py-2 bg-white border rounded"
-      >
+      <select onChange={handleCityChange} value={selectedCityId} className='px-4 py-2 bg-white border rounded'>
         <option value="">All Cities</option>
-        {cities.map((city) => (
-          <option key={city} value={city}>
-            {city}
-          </option>
+        {cities.map(({ id, name }) => (
+          <option key={id} value={id}>{name}</option>
         ))}
       </select>
-
-      <button onClick={handleFilterChange} className="px-4 py-2 bg-blue-600 text-white rounded">
-        Apply Filters
-      </button>
     </div>
   );
 };

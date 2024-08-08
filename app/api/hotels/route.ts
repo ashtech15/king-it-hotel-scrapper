@@ -6,8 +6,8 @@ const client = new MongoClient(process.env.MONGODB_URI as string);
 async function getHotels() {
   try {
     await client.connect();
-    const db = client.db('hotels');
-    const cacheCollection = db.collection('cache');
+    const db = client.db('king-it-test');
+    const cacheCollection = db.collection('hotels');
     const cache = await cacheCollection.findOne({ name: 'hotels' });
 
     if (cache && new Date().getTime() - cache.timestamp < 20 * 60 * 1000) {
@@ -27,11 +27,13 @@ async function getHotels() {
     }
 
     const data = await response.json();
-    const transformedData = data.map((hotel: any) => ({
+    const transformedData = data.data.hotels.map((hotel: any) => ({
       id: hotel.hotel_id,
       name: hotel.hotel_name,
       country: hotel.country,
+      countryId: hotel.country_id,
       city: hotel.city,
+      cityId: hotel.city_id,
       price: Math.ceil(parseFloat(hotel.price)),
       stars: parseInt(hotel.star, 10) || 0,
       imageUrl: hotel.image || ''

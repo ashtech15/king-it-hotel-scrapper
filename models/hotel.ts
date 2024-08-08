@@ -4,7 +4,9 @@ export interface IHotel extends Document {
   id: string;
   name: string;
   country: string;
+  countryId: string;
   city: string;
+  cityId: string;
   price: number;
   stars: number;
   imageUrl?: string;

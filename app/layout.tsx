@@ -10,7 +10,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <body className="bg-gray-100 text-gray-900">
         <header className="bg-blue-600 text-white p-4">
-          <h1 className="text-xl font-bold">Hotel Finder</h1>
+          <h1 className="text-xl font-bold">- King IT Solutions -</h1>
         </header>
         <main>{children}</main>
         <footer className="bg-gray-800 text-white text-center p-4">

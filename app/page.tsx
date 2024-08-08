@@ -10,10 +10,22 @@ interface Hotel {
   id: string;
   name: string;
   country: string;
+  countryId: string;
   city: string;
+  cityId: string;
   price: number;
   stars: number;
   imageUrl?: string;
+}
+
+interface Country {
+  id: string;
+  name: string;
+}
+
+interface City {
+  id: string;
+  name: string;
 }
 
 const Page = () => {
@@ -21,20 +33,33 @@ const Page = () => {
   const [filteredHotels, setFilteredHotels] = useState<Hotel[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [countryFilter, setCountryFilter] = useState<string>('');
-  const [cityFilter, setCityFilter] = useState<string>('');
+  const [countryIdFilter, setCountryIdFilter] = useState<string>('');
+  const [cityIdFilter, setCityIdFilter] = useState<string>('');
   const [sortOption, setSortOption] = useState<string>('');
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
 
   const itemsPerPage = 21;
 
   useEffect(() => {
     const fetchHotels = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/hotels`);
+        const response = await fetch('/api/hotels');
         const data: Hotel[] = await response.json();
         setHotels(data);
         setFilteredHotels(data);
         setTotalPages(Math.ceil(data.length / itemsPerPage));
+
+        const countries = Array.from(
+          new Map(data.map(hotel => [hotel.countryId, hotel.country])).entries()
+        ).map(([id, name]) => ({ id, name }));
+        
+        const cities = Array.from(
+          new Map(data.map(hotel => [hotel.cityId, hotel.city])).entries()
+        ).map(([id, name]) => ({ id, name }));
+
+        setCountries(countries);
+        setCities(cities);
       } catch (error) {
         console.error('Failed to fetch hotels:', error);
       }
@@ -46,12 +71,12 @@ const Page = () => {
   useEffect(() => {
     let updatedHotels = hotels;
 
-    if (countryFilter) {
-      updatedHotels = updatedHotels.filter(hotel => hotel.country === countryFilter);
+    if (countryIdFilter) {
+      updatedHotels = updatedHotels.filter(hotel => hotel.countryId === countryIdFilter);
     }
 
-    if (cityFilter) {
-      updatedHotels = updatedHotels.filter(hotel => hotel.city === cityFilter);
+    if (cityIdFilter) {
+      updatedHotels = updatedHotels.filter(hotel => hotel.cityId === cityIdFilter);
     }
 
     if (sortOption === 'price') {
@@ -63,23 +88,20 @@ const Page = () => {
     setFilteredHotels(updatedHotels);
     setTotalPages(Math.ceil(updatedHotels.length / itemsPerPage));
     setCurrentPage(1); // Reset to first page on filter/sort change
-  }, [countryFilter, cityFilter, sortOption, hotels]);
+  }, [countryIdFilter, cityIdFilter, sortOption, hotels]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const handleFilterChange = (country: string, city: string) => {
-    setCountryFilter(country);
-    setCityFilter(city);
+  const handleFilterChange = (countryId: string, cityId: string) => {
+    setCountryIdFilter(countryId);
+    setCityIdFilter(cityId);
   };
 
   const handleSortChange = (sortBy: string) => {
     setSortOption(sortBy);
   };
-
-  const countries = Array.from(new Set(hotels.map(hotel => hotel.country)));
-  const cities = Array.from(new Set(hotels.map(hotel => hotel.city)));
 
   const paginatedHotels = filteredHotels.slice(
     (currentPage - 1) * itemsPerPage,

@@ -16,7 +16,7 @@ const HotelItem: React.FC<HotelItemProps> = ({ hotel }) => {
     return (
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
             {hotel.imageUrl ? (
-                <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-48 object-cover" />
+                <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-48 object-cover" loading="lazy" />
             ) : (
                 <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
                     <span className="text-gray-500">No Image Available</span>

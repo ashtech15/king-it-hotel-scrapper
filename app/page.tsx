@@ -36,9 +36,11 @@ const Page = () => {
   const [countries, setCountries] = useState<Filter[]>([]);
   const [cities, setCities] = useState<Filter[]>([]);
   const [itemsPerPage, setItemsPerPage] = useState<number>(21);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchHotels = async () => {
+      setLoading(true);
       try {
         const response = await fetch('/api/hotels');
         const data: Hotel[] = await response.json();
@@ -58,11 +60,13 @@ const Page = () => {
         setCities(cities);
       } catch (error) {
         console.error('Failed to fetch hotels:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchHotels();
-  }, []);
+  }, [itemsPerPage]);
 
   useEffect(() => {
     let updatedHotels = hotels;
@@ -88,7 +92,7 @@ const Page = () => {
     setFilteredHotels(updatedHotels);
     setTotalPages(Math.ceil(updatedHotels.length / itemsPerPage));
     setCurrentPage(1);
-  }, [countryIdFilter, cityIdFilter, sortOption, priceSortOrder, starsSortOrder, hotels]);
+  }, [countryIdFilter, cityIdFilter, sortOption, priceSortOrder, starsSortOrder, hotels, itemsPerPage]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -117,6 +121,19 @@ const Page = () => {
     currentPage * itemsPerPage
   );
 
+  // Placeholder items
+  const placeholders = Array.from({ length: itemsPerPage }, (_, index) => ({
+    id: `placeholder-${index}`,
+    name: 'Loading...',
+    country: '',
+    countryId: '',
+    city: '',
+    cityId: '',
+    price: 0,
+    stars: 0,
+    imageUrl: 'https://ucarecdn.com/faff2888-016b-4c54-9870-25f9a21129f5/-/preview/1600x900/-/blur/500/',
+  }));
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4">Hotel Offers</h1>
@@ -125,6 +142,7 @@ const Page = () => {
         countries={countries}
         cities={cities}
         onFilterChange={handleFilterChange}
+        disabled={loading}
       />
 
       <div className="flex justify-between items-center mb-4">
@@ -132,6 +150,7 @@ const Page = () => {
           onSortChange={handleSortChange}
           priceSortOrder={priceSortOrder}
           starsSortOrder={starsSortOrder}
+          disabled={loading}
         />        
         <div className="flex items-center ml-auto">
           <label htmlFor="itemsPerPage" className="mr-2">Items per page:</label>
@@ -140,6 +159,7 @@ const Page = () => {
             value={itemsPerPage}
             onChange={handleItemsPerPageChange}
             className="border rounded p-2"
+            disabled={loading}
           >
             <option value={10}>10</option>
             <option value={21}>21</option>
@@ -149,12 +169,13 @@ const Page = () => {
         </div>
       </div>
 
-      <HotelList hotels={paginatedHotels} />
+      <HotelList hotels={loading ? placeholders : paginatedHotels} />
 
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
+        disabled={loading}
       />
     </div>
   );

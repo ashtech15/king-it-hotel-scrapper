@@ -4,12 +4,12 @@ interface PaginationProps {
     onPageChange: (page: number) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+const Pagination: React.FC<PaginationProps & { disabled?: boolean }> = ({ currentPage, totalPages, onPageChange, disabled }) => {
     return (
         <div className="flex justify-center mt-4">
             <button
                 onClick={() => onPageChange(currentPage - 1)}
-                disabled={currentPage === 1}
+                disabled={currentPage === 1 || disabled}
                 className="px-4 py-2 bg-blue-600 text-white rounded-l disabled:bg-gray-300"
             >
                 Previous
@@ -19,7 +19,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
             </span>
             <button
                 onClick={() => onPageChange(currentPage + 1)}
-                disabled={currentPage >= totalPages}
+                disabled={currentPage >= totalPages || disabled}
                 className="px-4 py-2 bg-blue-600 text-white rounded-r disabled:bg-gray-300"
             >
                 Next

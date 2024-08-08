@@ -11,7 +11,7 @@ interface FiltersProps {
   onFilterChange: (countryId: string, cityId: string) => void;
 }
 
-const Filters = ({ countries, cities, onFilterChange }: FiltersProps) => {
+const Filters: React.FC<FiltersProps & { disabled?: boolean }> = ({ countries, cities, onFilterChange, disabled }) => {
   const [selectedCountryId, setSelectedCountryId] = useState<string>('');
   const [selectedCityId, setSelectedCityId] = useState<string>('');
 
@@ -29,13 +29,13 @@ const Filters = ({ countries, cities, onFilterChange }: FiltersProps) => {
 
   return (
     <div className='flex space-x-4 mb-4'>
-      <select onChange={handleCountryChange} value={selectedCountryId} className='px-4 py-2 bg-white border rounded'>
+      <select disabled={disabled} onChange={handleCountryChange} value={selectedCountryId} className='px-4 py-2 bg-white border rounded'>
         <option value="">All Countries</option>
         {countries.map(({ id, name }) => (
           <option key={id} value={id}>{name}</option>
         ))}
       </select>
-      <select onChange={handleCityChange} value={selectedCityId} className='px-4 py-2 bg-white border rounded'>
+      <select disabled={disabled} onChange={handleCityChange} value={selectedCityId} className='px-4 py-2 bg-white border rounded'>
         <option value="">All Cities</option>
         {cities.map(({ id, name }) => (
           <option key={id} value={id}>{name}</option>

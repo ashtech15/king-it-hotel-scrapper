@@ -30,12 +30,12 @@ const Page = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [countryIdFilter, setCountryIdFilter] = useState<string>('');
   const [cityIdFilter, setCityIdFilter] = useState<string>('');
-  const [sortOption, setSortOption] = useState<string>('');
+  const [sortOption, setSortOption] = useState<string>('price');
   const [priceSortOrder, setPriceSortOrder] = useState<'asc' | 'desc'>('asc');
   const [starsSortOrder, setStarsSortOrder] = useState<'asc' | 'desc'>('asc');
   const [countries, setCountries] = useState<Filter[]>([]);
   const [cities, setCities] = useState<Filter[]>([]);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(21);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(25);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -66,7 +66,7 @@ const Page = () => {
     };
 
     fetchHotels();
-  }, [itemsPerPage]);
+  }, []);
 
   useEffect(() => {
     let updatedHotels = hotels;
@@ -80,13 +80,9 @@ const Page = () => {
     }
 
     if (sortOption === 'price') {
-      updatedHotels.sort((a, b) => {
-        return priceSortOrder === 'asc' ? a.price - b.price : b.price - a.price;
-      });
+      updatedHotels.sort((a, b) => priceSortOrder === 'asc' ? a.price - b.price : b.price - a.price);
     } else if (sortOption === 'stars') {
-      updatedHotels.sort((a, b) => {
-        return starsSortOrder === 'asc' ? a.stars - b.stars : b.stars - a.stars;
-      });
+      updatedHotels.sort((a, b) => starsSortOrder === 'asc' ? a.stars - b.stars : b.stars - a.stars);
     }
 
     setFilteredHotels(updatedHotels);
@@ -106,9 +102,9 @@ const Page = () => {
   const handleSortChange = (sortBy: string) => {
     setSortOption(sortBy);
     if (sortBy === 'price') {
-      setPriceSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
+      setPriceSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
     } else if (sortBy === 'stars') {
-      setStarsSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
+      setStarsSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
     }
   };
 
@@ -145,13 +141,21 @@ const Page = () => {
         disabled={loading}
       />
 
-      <div className="flex justify-between items-center mb-4">
-        <Sorting
-          onSortChange={handleSortChange}
-          priceSortOrder={priceSortOrder}
-          starsSortOrder={starsSortOrder}
+      <Sorting
+        onSortChange={handleSortChange}
+        priceSortOrder={priceSortOrder}
+        starsSortOrder={starsSortOrder}
+        disabled={loading}
+      />
+
+      <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
           disabled={loading}
-        />        
+      />
+
+      <div className="flex justify-between items-center mb-4">
         <div className="flex items-center ml-auto">
           <label htmlFor="itemsPerPage" className="mr-2">Items per page:</label>
           <select
@@ -162,7 +166,7 @@ const Page = () => {
             disabled={loading}
           >
             <option value={10}>10</option>
-            <option value={21}>21</option>
+            <option value={25}>25</option>
             <option value={50}>50</option>
             <option value={100}>100</option>
           </select>

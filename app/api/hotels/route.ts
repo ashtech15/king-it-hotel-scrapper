@@ -7,13 +7,17 @@ async function getHotels() {
   try {
     await client.connect();
     const db = client.db(process.env.DATABASE);
-    const cacheCollection = db.collection('hotels');
+    const hotelsCollection = db.collection('hotels');
 
-    const cache = await cacheCollection.findOne({ name: 'hotels' });
+    // Check if data is recent (e.g., within the last 20 minutes)
+    const lastUpdate = await hotelsCollection.findOne({}, { sort: { _id: -1 }, projection: { _id: 0, lastUpdated: 1 } });
 
-    if (cache && new Date().getTime() - cache.timestamp < 20 * 60 * 1000) {
+    const twentyMinutesAgo = new Date().getTime() - 20 * 60 * 1000;
+
+    if (lastUpdate && lastUpdate.lastUpdated && lastUpdate.lastUpdated.getTime() > twentyMinutesAgo) {
       console.log('Returning cached data');
-      return JSON.parse(cache.data);
+      const hotels = await hotelsCollection.find({}).toArray();
+      return hotels;
     }
 
     console.log('Fetching new data from API');
@@ -35,7 +39,7 @@ async function getHotels() {
       const hotelId = hotel.hotel_id;
       if (!hotelsMap.has(hotelId) || hotelsMap.get(hotelId).price > parseFloat(hotel.price)) {
         hotelsMap.set(hotelId, {
-          id: new ObjectId,
+          hotelId,
           name: hotel.hotel_name,
           country: hotel.country,
           countryId: hotel.country_id,
@@ -44,6 +48,7 @@ async function getHotels() {
           price: Math.ceil(parseFloat(hotel.price)),
           stars: parseInt(hotel.star, 10) || 0,
           imageUrl: hotel.image || '',
+          cachedAt: new Date(),
         });
       } else if (hotel.image) {
         // Update imageUrl if another offer has an image
@@ -57,12 +62,16 @@ async function getHotels() {
 
     const transformedData = Array.from(hotelsMap.values());
 
-    console.log('Storing data in cache');
-    await cacheCollection.updateMany(
-      { name: 'hotels' },
-      { $set: { data: JSON.stringify(transformedData), timestamp: new Date().getTime() } },
-      { upsert: true }
-    );
+    console.log('Storing data in MongoDB');
+    const bulkOps = transformedData.map(hotel => ({
+      updateOne: {
+        filter: { hotelId: hotel.hotelId },
+        update: { $set: hotel },
+        upsert: true,
+      },
+    }));
+
+    await hotelsCollection.bulkWrite(bulkOps);
 
     return transformedData;
   } catch (error) {

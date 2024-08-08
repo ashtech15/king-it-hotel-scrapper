@@ -14,7 +14,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </header>
         <main>{children}</main>
         <footer className="bg-gray-800 text-white text-center p-4">
-          <p>&copy; 2024 Hotel Finder. All rights reserved.</p>
+          <p>&copy; 2024 Hotel Finder by Dennis. All rights reserved.</p>
         </footer>
       </body>
     </html>

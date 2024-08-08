@@ -30,7 +30,7 @@ const Page = () => {
   useEffect(() => {
     const fetchHotels = async () => {
       try {
-        const response = await fetch('/api/hotels');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/hotels`);
         const data: Hotel[] = await response.json();
         setHotels(data);
         setFilteredHotels(data);
@@ -62,7 +62,7 @@ const Page = () => {
 
     setFilteredHotels(updatedHotels);
     setTotalPages(Math.ceil(updatedHotels.length / itemsPerPage));
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on filter/sort change
   }, [countryFilter, cityFilter, sortOption, hotels]);
 
   const handlePageChange = (page: number) => {
@@ -78,6 +78,9 @@ const Page = () => {
     setSortOption(sortBy);
   };
 
+  const countries = Array.from(new Set(hotels.map(hotel => hotel.country)));
+  const cities = Array.from(new Set(hotels.map(hotel => hotel.city)));
+
   const paginatedHotels = filteredHotels.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -88,8 +91,8 @@ const Page = () => {
       <h1 className="text-3xl font-bold mb-4">Hotel Offers</h1>
 
       <Filters
-        countries={[...new Set(hotels.map(hotel => hotel.country))]}
-        cities={[...new Set(hotels.map(hotel => hotel.city))]}
+        countries={countries}
+        cities={cities}
         onFilterChange={handleFilterChange}
       />
 

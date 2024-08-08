@@ -11,9 +11,11 @@ async function getHotels() {
     const cache = await cacheCollection.findOne({ name: 'hotels' });
 
     if (cache && new Date().getTime() - cache.timestamp < 20 * 60 * 1000) {
+      console.log('Returning cached data');
       return JSON.parse(cache.data);
     }
 
+    console.log('Fetching new data from API');
     const response = await fetch('http://testapi.swisshalley.com/hotels/', {
       headers: {
         'X-API-KEY': process.env.API_KEY as string
@@ -21,7 +23,7 @@ async function getHotels() {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch data from API');
+      throw new Error(`API response not OK: ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -35,6 +37,7 @@ async function getHotels() {
       imageUrl: hotel.image || ''
     }));
 
+    console.log('Storing data in cache');
     await cacheCollection.updateOne(
       { name: 'hotels' },
       { $set: { data: JSON.stringify(transformedData), timestamp: new Date().getTime() } },

@@ -2,7 +2,6 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IHotel extends Document {
   id: string;
-  hotelId: string;
   name: string;
   country: string;
   countryId: string;
@@ -16,7 +15,6 @@ export interface IHotel extends Document {
 
 const HotelSchema: Schema = new Schema({
   id: { type: String, required: true },
-  hotelId: { type: String, required: true },
   name: { type: String, required: true },
   country: { type: String, required: true },
   city: { type: String, required: true },

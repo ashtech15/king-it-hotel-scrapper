@@ -6,7 +6,7 @@ const client = new MongoClient(process.env.MONGODB_URI as string);
 async function getHotels() {
   try {
     await client.connect();
-    const db = client.db('king-it-test');
+    const db = client.db(process.env.DATABASE);
     const cacheCollection = db.collection('hotels');
 
     const cache = await cacheCollection.findOne({ name: 'hotels' });
@@ -31,7 +31,6 @@ async function getHotels() {
     
     const transformedData = data.data.hotels.map((hotel: any) => ({
       id: new ObjectId(),
-      hotelId: hotel.hotel_id,
       name: hotel.hotel_name,
       country: hotel.country,
       countryId: hotel.country_id,
@@ -43,7 +42,7 @@ async function getHotels() {
     }));
 
     console.log('Storing data in cache');
-    await cacheCollection.updateOne(
+    await cacheCollection.updateMany(
       { name: 'hotels' },
       { $set: { data: JSON.stringify(transformedData), timestamp: new Date().getTime() } },
       { upsert: true }

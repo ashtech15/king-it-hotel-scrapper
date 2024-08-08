@@ -8,7 +8,6 @@ import Pagination from './components/Pagination';
 
 interface Hotel {
   id: string;
-  hotelId: string;
   name: string;
   country: string;
   countryId: string;
@@ -32,10 +31,11 @@ const Page = () => {
   const [countryIdFilter, setCountryIdFilter] = useState<string>('');
   const [cityIdFilter, setCityIdFilter] = useState<string>('');
   const [sortOption, setSortOption] = useState<string>('');
+  const [priceSortOrder, setPriceSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [starsSortOrder, setStarsSortOrder] = useState<'asc' | 'desc'>('asc');
   const [countries, setCountries] = useState<Filter[]>([]);
   const [cities, setCities] = useState<Filter[]>([]);
-
-  const itemsPerPage = 21;
+  const [itemsPerPage, setItemsPerPage] = useState<number>(21);
 
   useEffect(() => {
     const fetchHotels = async () => {
@@ -76,15 +76,19 @@ const Page = () => {
     }
 
     if (sortOption === 'price') {
-      updatedHotels.sort((a, b) => a.price - b.price);
+      updatedHotels.sort((a, b) => {
+        return priceSortOrder === 'asc' ? a.price - b.price : b.price - a.price;
+      });
     } else if (sortOption === 'stars') {
-      updatedHotels.sort((a, b) => b.stars - a.stars);
+      updatedHotels.sort((a, b) => {
+        return starsSortOrder === 'asc' ? a.stars - b.stars : b.stars - a.stars;
+      });
     }
 
     setFilteredHotels(updatedHotels);
     setTotalPages(Math.ceil(updatedHotels.length / itemsPerPage));
     setCurrentPage(1);
-  }, [countryIdFilter, cityIdFilter, sortOption, hotels]);
+  }, [countryIdFilter, cityIdFilter, sortOption, priceSortOrder, starsSortOrder, hotels]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -97,6 +101,15 @@ const Page = () => {
 
   const handleSortChange = (sortBy: string) => {
     setSortOption(sortBy);
+    if (sortBy === 'price') {
+      setPriceSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
+    } else if (sortBy === 'stars') {
+      setStarsSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
+    }
+  };
+
+  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setItemsPerPage(parseInt(e.target.value, 10));
   };
 
   const paginatedHotels = filteredHotels.slice(
@@ -114,7 +127,27 @@ const Page = () => {
         onFilterChange={handleFilterChange}
       />
 
-      <Sorting onSortChange={handleSortChange} />
+      <div className="flex justify-between items-center mb-4">
+        <Sorting
+          onSortChange={handleSortChange}
+          priceSortOrder={priceSortOrder}
+          starsSortOrder={starsSortOrder}
+        />        
+        <div className="flex items-center ml-auto">
+          <label htmlFor="itemsPerPage" className="mr-2">Items per page:</label>
+          <select
+            id="itemsPerPage"
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+            className="border rounded p-2"
+          >
+            <option value={10}>10</option>
+            <option value={21}>21</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+      </div>
 
       <HotelList hotels={paginatedHotels} />
 
